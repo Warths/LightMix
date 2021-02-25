@@ -1,182 +1,1 @@
-
-
-
-
-from lightmix_cls import LightMix
-from event import Event
-import time
-import requests
-
-server = requests.WebServer()
-
-lightmix = LightMix(rPin, gPin, bPin, wwPin, cwPin)
-lightmix_clock = Timer(0)
-  
-@server.route("/calibrate")
-def calibrate(request):
-  params = request.params_dict()
-  code=202
-  content={
-    "success": True,
-    "message": None
-  }
-  # Case multiple parameters
-  if len(params) < 1:
-    code=400
-    content['success'] = False
-    content['message'] = 'Missing required parameter : "current_time"'
-  elif len(params) > 1:
-    code=400
-    content['success'] = False
-    content['message'] = 'Too many parameters. Only "current_time" allowed'
-  # Case no required parameters 
-  elif "current_time" not in params:
-    code=400
-    content['success'] = False
-    content['message'] = 'Invalid parameter. Only "current_time" allowed'
-  # Case invalid parameter value
-  elif not params["current_time"].isdigit():
-    code=400
-    content['success'] = False
-    content['message'] = 'Invalid parameter type for "current_time", expecting Integer'
-  # Case valid request
-  if code == 202:
-    current_time = int(params["current_time"])
-    lightmix.set_time_offset(current_time)
-    content['success'] = True
-    content['message'] = 'Machine time is {}. Time offset set at {}'.format(current_time - lightmix.time_offset, lightmix.time_offset)
-  # Response
-  return requests.Response(code=code, content=content)
-
-@server.route("/addevent")
-def addevent(request):
-  """
-  Event(self.channels[i], time.ticks_ms() + 2000, duration=1000, rgbwt_target={"r": 512}))
-  """
-  required_parameters= [
-    "channel", 
-    "duration"
-  ]
-  permitted_parameters = [
-    # Required
-    "channel", 
-    "start_at", 
-    "duration", 
-    # Start anchor
-    "r_start",
-    "g_start",
-    "b_start",
-    "w_start",
-    "temp_start",
-    "master_start",
-    # Target anchor
-    "r_end",
-    "g_end",
-    "b_end",
-    "w_end",
-    "temp_end",
-    "master_end"
-  ]
-  
-  params = request.params_dict()
-  code=202
-  content={
-    "success": True,
-    "message": None
-  }
-  
-  
-  # Case forbidden parameters
-  if not all(param in permitted_parameters for param in params):
-    
-    forbidden_parameters = []
-    for param in params:
-      if param not in permitted_parameters:
-        forbidden_parameters.append(param)
-    code = 400
-    content["success"] = False
-    content["message"] = "Parameter{} not allowed : {}".format("s" if len(forbidden_parameters) > 1 else "", ", ".join(forbidden_parameters))
-  
-  # Case missing required parameters
-  elif not all(param in params for param in required_parameters):  
-    missing_parameters = []
-    for param in required_parameters:
-      if param not in params:
-        missing_parameters.append(param)
-    code = 400
-    content["success"] = False
-    content["message"] = "Missing Parameter{} : {}".format("s" if len(missing_parameters) > 1 else "", ", ".join(missing_parameters))
-  
-  # Case invalid value
-  elif not all(params[k].isdigit() for k in params):
-    invalid_parameters = []
-    for k in params:
-      if not params[k].isdigit():
-        invalid_parameters.append(k)
-    code = 400
-    content["success"] = False
-    content["message"] = "Invalid type for parameter{} : {}. Expecting integer".format("s" if len(invalid_parameters) > 1 else "", ", ".join(invalid_parameters)) 
-    
-  else:
-    # Converting all params to Int
-    for param in params:
-      params[param] = int(params[param])
-      
-    # Building Event
-    e = request.raw_params
-    if "start_at" not in params:
-      e += "&start_at={}".format(2000 + lightmix.time_offset + time.ticks_ms())
-    
-    lightmix.channels[params["channel"]].queue.append(e)
-  return requests.Response(code=code, content=content)
-
-@server.route("/delall")
-def delall(request):
-  lenght = 0
-  
-  for channel in lightmix.channels:
-    lenght += len(channel.events)
-    channel.events = []
-    lenght += len(channel.queue)
-    channel.queue = []
-  return requests.Response(code=200, content={"success": True, "message": "{} events destroyed".format(lenght)})
-
-
- 
-lightmix_clock.init(period=20, mode=Timer.PERIODIC, callback=lightmix.update)
-
-
-# Init Wifi connection
-SSID = "YOUR SSID HERE"
-PASS = "YOUR WIFI PASSWORD HERE"
-
-station = network.WLAN(network.STA_IF)
-
-station.active(True)
-station.connect(SSID, PASS)
-
-tries = 0
-while station.isconnected() == False:
-  tries += 1
-  if tries > 50000:
-    break
-
-
-print(station.ifconfig())
-
-if tries > 50000:
-  lightmix_clock.deinit()
-  while True:
-    rPin.duty(24)
-    time.sleep(1)
-    rPin.duty(0)
-    time.sleep(1)
-
-  
-server.run(debug=False)
-
-
-
-
-
-
+from lightmix import LightMixfrom event import Eventfrom machine import Timerimport timeimport requestsimport sys# Declaring important objects server = requests.WebServer()lightmix = LightMix()lightmix_clock = Timer(0)@server.route("/calibrate")def calibrate(request):  """  A calibration can be performed by a master/client to  ensure the synchronisation beetween multiple devices    http params:    current_time - positive integer    :params: request  :return: HTTP Response  """    print("Calibration request...")  # Setting new time offset  lightmix.set_time_offset(int(request.params_dict()["current_time"]))  # Composing HTTP Response  content = {    "success": True,    "message": 'Time offset set at {}'.format(lightmix.time_offset)  }  # Returning Response  return requests.Response(code=200, content=content)@server.route("/addevent")def addevent(request):  """  Event adding HTTP endpoint    http params:    cs (optionnal) - starting color ; hex value from 8bits to 32bits    ce (optionnal) - ending color ; hex value from 8bits to 32bits    t (optionnal)  - timestamp to schedule event execution ; positive int    d (optionnal)  - duration in millisecond of the event ; positive int    k (optionnal)  - keylight coefficient ; add a white tint to global color        Multiple collections of parameters can be added, with "&&" separator. They will    be considered as seperate event, and will be added to the queue in order      :request: Http Request Object  :return: Http Response  """  print("Adding event")  events = request.raw_params.split("&&")  for element in events:    try:      lightmix.queue += element + '#'    except MemoryError:      pass    return requests.Response(code=202, content={"success": True, "message": None})@server.route("/wandering")def wandering(request):    """    Wandering Endpoint        http params:      min_ms      : minimum slope duration ; positive int       max_ms      : maximum slope duration ; positive int       idle_min_ms : minimum idle duration ; positive int       idle_max_ms : maximum idle duration ; positive int       min_c       : minimum coefficient ; int beetween 0 and 100      max_c       : maximum coefficient ; int beetween 0 and 100          Wandering is an endpoint that randomise the power output over time.    This can be used to set a master value (maximum power output)        :request: Http Request    :return: Http Response    """    try:        # BUG : max/min time identical ?         parameters = request.params_dict()                # Validating parameters         min_ms = int(parameters["min_ms"])        max_ms = int(parameters["max_ms"])                idle_min_ms = int(parameters["idle_min_ms"])        idle_max_ms = int(parameters["idle_max_ms"])                # Checking that time arent negatives        if any(value < 0 for value in [min_ms, max_ms, idle_min_ms, idle_max_ms]):           raise ValueError                min_c = int(parameters["min_c"])        max_c = int(parameters["max_c"])                # Checking that coefficient is beetween 0 and 100        if any(value < 0 or value > 100 for value in [min_c, max_c]):          raise ValueError                         # Setting values to the lightmix Wanderer object        lightmix.wanderer.min_ms = min_ms        lightmix.wanderer.max_ms = max_ms                lightmix.wanderer.idle_min_ms = idle_min_ms        lightmix.wanderer.idle_max_ms = idle_max_ms                lightmix.wanderer.min_c = min_c        lightmix.wanderer.max_c = max_c                # Returning Response        return requests.Response(code=200, content={"success": True, "message": "Wanderer updated"})    # Failure    except:        return requests.Response(code=200, content={"success": False, "message": "Wanderer not updated"})@server.route("/delall")def delall(request):  """  Removes every event      :request: Http Request  :return: Http Response   """  # Emptying queue and current event   lightmix.event = None  lightmix.queue = ""  # Returning Response  return requests.Response(code=200, content={"success": True, "message": "Cleaned."})# TODO Rewrite this part to be web-configured# Init Wifi connectionSSID = "Warths"PASS = "WarthsAccessPoint"station = network.WLAN(network.STA_IF)station.active(True)station.connect(SSID, PASS)# Waiting until connection is successfulwhile station.isconnected() == False:    print("[Wifi] Connecting...")    time.sleep(1)    print("[Wifi] Success!")print("[Wifi] Machine IP is : {}".format(station.ifconfig()[0])) # END REWRITEif sys.platform == "esp8266":    lightmix_clock.init(period=20, mode=Timer.PERIODIC, callback=lightmix.update)server.run()# Calculating tick ratetick_rate = 50tick_duration = int(1000 / tick_rate)while True:    t = time.ticks_ms()    # Performing update, clearing queue if failure    try:      lightmix.update()    except Exception as e:      sys.print_exception(e)      print("Clearing queue")      lightmix.event = None      lightmix.queue = ""    # Calculating wait time according to tick rate    time.sleep_ms(tick_duration - (time.ticks_ms() - t))

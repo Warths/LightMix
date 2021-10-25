@@ -1,6 +1,7 @@
 import time
 import urandom
 
+
 class WanderingCoefficient:
     def __init__(self, min_ms, max_ms, idle_min_ms, idle_max_ms, min_c, max_c=100):
         """
@@ -15,22 +16,22 @@ class WanderingCoefficient:
         """
         self.min_ms = min_ms
         self.max_ms = max_ms
-        
+
         self.idle_min_ms = idle_min_ms
         self.idle_max_ms = idle_max_ms
-        
+
         self.min_c = min_c
         self.max_c = max_c
-        
+
         self.idle = False
-        
+
         self._previous_time_target = time.ticks_ms()
         self._previous_coef_target = 100
 
         # Getting random wandering time and coef
         self._current_time_target = self.generate_time_target()
         self._current_coef_target = self.generate_coef_target()
- 
+
     def refresh_targets(self):
         """
         Toggle wandering state (idle/slope) and generate new coefs/times
@@ -48,7 +49,7 @@ class WanderingCoefficient:
             # Generating new idle time
             self._current_time_target = self.generate_idle_time()
             self.idle = True
-            
+
     def generate_idle_time(self):
         """
         generate a random value beetween specified idle time range
@@ -74,8 +75,8 @@ class WanderingCoefficient:
         """
         if self.target_expired:
             self.refresh_targets()
-        return self._previous_coef_target + (self._current_coef_target - self._previous_coef_target) * self.easeInOutQuad(self.completion)
-
+        return self._previous_coef_target + (
+                    self._current_coef_target - self._previous_coef_target) * self.easeInOutQuad(self.completion)
 
     @property
     def target_expired(self):
@@ -92,14 +93,14 @@ class WanderingCoefficient:
         """
         duration = self._current_time_target - self._previous_time_target
         current_time = time.ticks_ms() - self._previous_time_target
-        return current_time/duration
+        return current_time / duration
 
     def easeInOutQuad(self, t):
         """
         Mathematical function to get a smooth slope
         """
         return 2 * t * t if t < 0.5 else -1 + (4 - 2 * t) * t
-    
+
     @staticmethod
     def randint(min_v, max_v):
         """

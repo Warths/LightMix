@@ -36,4 +36,3 @@ def write(filename, content):
 
 def erase_flash():
     uos.rmdir("flash")
-

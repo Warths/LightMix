@@ -113,4 +113,3 @@ class WanderingCoefficient:
             m = 0
         randint = m + min_v
         return randint
-

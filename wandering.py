@@ -105,6 +105,10 @@ class WanderingCoefficient:
         """
         Return a random number beetween specified range 
         """
-        r = urandom.getrandbits(32)    
-        m = r % (max_v - min_v)  
-        return m + min_v
+        r = urandom.getrandbits(32)
+        try:
+            m = r % (max_v - min_v)
+        except ZeroDivisionError:
+            m = 0
+        randint = m + min_v
+        return randint

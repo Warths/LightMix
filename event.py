@@ -73,7 +73,7 @@ class Event:
     def easing(self, t):
         """
         Quadratic In/out easing method
-        :t: float beetween 0 and 1. Representing completion of the event
-        :return: float beetween 0 and 1. Coefficient of easing
+        :t: float between 0 and 1. Representing completion of the event
+        :return: float between 0 and 1. Coefficient of easing
         """
         return 2 * t * t if t < 0.5 else -1 + (4 - 2 * t) * t

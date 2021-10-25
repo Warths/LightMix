@@ -10,7 +10,7 @@ class LightMix:
         """
         Dynamic color mixer
         Programmed throught events
-        Manage timed color-change event queue and push them throught the PCA9685.
+        Manage timed color-change event queue and push to the pins.
         """
         self.time_offset = 0
         self.pin_indexes = {

@@ -9,7 +9,6 @@ def read(filename, default=None):
     """
     try:
         uos.mkdir("flash")
-        uos.mkdir("flash2")
     except:
         pass
     try:

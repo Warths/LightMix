@@ -201,8 +201,6 @@ def init_wifi():
 
 init_wifi()
 
-if sys.platform == "esp8266":
-    lightmix_clock.init(period=20, mode=Timer.PERIODIC, callback=lightmix.update)
 server.run()
 
 # Calculating tick rate

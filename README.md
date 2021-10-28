@@ -18,14 +18,14 @@ In this demo, we can see almost every functionnality of the panels :
 ### Firmware
 Building the firware of a LightMix is pretty simple.
 
-- Flash your ***ESP32 D1 Mini*** with [MicroPython 1.13](../misc/micropython/)
-- upload the [firmware](../firmware/) to your board. 
+- Flash your ***ESP32 D1 Mini*** with [MicroPython 1.13](/misc/micropython/)
+- upload the [firmware](/firmware/) to your board. 
 - Fill the credentials.py file
 -  done.
 
 ### Hardware
 **Building the board :**
-Gerber files are provided [here](../misc/pcb%20gerber/). You can order a blank board on any PCB-making service or manufacture it yourself. 
+Gerber files are provided [here](/misc/pcb%20gerber/). You can order a blank board on any PCB-making service or manufacture it yourself. 
 
 1. You'll need a few components : 
 	- x1 [ESP32 D1 Mini](https://amzn.to/3GvT8Uq)

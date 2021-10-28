@@ -14,6 +14,7 @@ lightmix_clock = Timer(0)
 write("ssid", SSID)
 write("pass", PASS)
 
+
 # Network items
 server = requests.WebServer()
 station = network.WLAN(network.STA_IF)

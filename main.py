@@ -5,13 +5,14 @@ import time
 import requests
 import sys
 from file_io import read, write
+from credentials import SSID, PASS
 
 # Declaring important objects
 lightmix = LightMix()
 lightmix_clock = Timer(0)
 
-write("ssid", "YourSSIDHere")
-write("pass", "YourPASSHere")
+write("ssid", SSID)
+write("pass", PASS)
 
 # Network items
 server = requests.WebServer()

@@ -4,13 +4,12 @@ import time
 from event import Event
 from wandering import WanderingCoefficient
 
-
 class LightMix:
     def __init__(self):
         """
         Dynamic color mixer
         Programmed throught events
-        Manage timed color-change event queue and push to the pins.
+        Manage timed color-change event queue and push them throught the PCA9685.
         """
         self.time_offset = 0
         self.pin_indexes = {

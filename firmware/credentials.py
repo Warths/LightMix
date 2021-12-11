@@ -1,2 +1,2 @@
-PASS = "YourPASSHere"
-SSID = "YourSSIDHere"
+PASS = "Warths"
+SSID = "WarthsAccessPoint"

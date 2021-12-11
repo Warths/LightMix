@@ -1,7 +1,6 @@
 import time
 import urandom
 
-
 class WanderingCoefficient:
     def __init__(self, min_ms, max_ms, idle_min_ms, idle_max_ms, min_c, max_c=100):
         """
@@ -87,7 +86,6 @@ class WanderingCoefficient:
               Which can happen after a few days of runtime.
         :return: Boolean
         """
-        print(self.expires_in)
         return not 0 < self.expires_in < 86400000
 
     @property
@@ -115,7 +113,7 @@ class WanderingCoefficient:
     @staticmethod
     def randint(min_v, max_v):
         """
-        Return a random number beetween specified range
+        Return a random number beetween specified range 
         """
         r = urandom.getrandbits(32)
         try:
@@ -124,4 +122,3 @@ class WanderingCoefficient:
             m = 0
         randint = m + min_v
         return randint
-

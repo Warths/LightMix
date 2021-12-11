@@ -4,6 +4,7 @@ from machine import Timer
 import time
 import requests
 import sys
+from credentials import PASS, SSID
 
 # Declaring important objects
 lightmix = LightMix()

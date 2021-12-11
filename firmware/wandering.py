@@ -82,9 +82,20 @@ class WanderingCoefficient:
     def target_expired(self):
         """
         checks if current time target has expired
+        NOTE: 86400000 is the number of ms in a day.
+              This allows avoiding integer overflow
+              Which can happen after a few days of runtime.
         :return: Boolean
         """
-        return time.ticks_ms() > self._current_time_target
+        print(self.expires_in)
+        return not 0 < self.expires_in < 86400000
+
+    @property
+    def expires_in(self):
+        """
+        Return the numbers of MS before target expiration.
+        """
+        return self._current_time_target - time.ticks_ms()
 
     @property
     def completion(self):
@@ -104,7 +115,7 @@ class WanderingCoefficient:
     @staticmethod
     def randint(min_v, max_v):
         """
-        Return a random number beetween specified range 
+        Return a random number beetween specified range
         """
         r = urandom.getrandbits(32)
         try:
@@ -113,3 +124,4 @@ class WanderingCoefficient:
             m = 0
         randint = m + min_v
         return randint
+
